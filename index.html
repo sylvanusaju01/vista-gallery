@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vista - Image Gallery</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #fafafa;
+    color: #222;
+}
+
+header {
+    padding: 25px 6%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.logo {
+    font-size: 27px;
+    font-weight: bold;
+    color: #e60023;
+}
+
+.search {
+    width: 40%;
+    padding: 14px 20px;
+    border: none;
+    outline: none;
+    background: #f1f1f1;
+    border-radius: 30px;
+    font-size: 15px;
+}
+
+.hero {
+    text-align: center;
+    padding: 55px 15px 35px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 12px;
+}
+
+.hero p {
+    color: #777;
+    font-size: 16px;
+}
+
+.categories {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 20px 15px 35px;
+}
+
+.category {
+    padding: 11px 22px;
+    border-radius: 25px;
+    border: none;
+    background: #eee;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.category.active,
+.category:hover {
+    background: #222;
+    color: white;
+}
+
+.gallery {
+    columns: 4;
+    column-gap: 18px;
+    padding: 0 5%;
+}
+
+.card {
+    break-inside: avoid;
+    margin-bottom: 20px;
+    position: relative;
+    border-radius: 13px;
+    overflow: hidden;
+    background: white;
+    cursor: pointer;
+}
+
+.card img {
+    width: 100%;
+    display: block;
+    border-radius: 13px;
+    transition: transform .4s;
+}
+
+.card:hover img {
+    transform: scale(1.04);
+}
+
+.card-info {
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-info span {
+    font-size: 13px;
+    color: #555;
+}
+
+.heart {
+    border: none;
+    background: white;
+    font-size: 21px;
+    cursor: pointer;
+}
+
+.heart.liked {
+    color: red;
+}
+
+.source {
+    display: block;
+    color: #777;
+    text-decoration: none;
+    font-size: 12px;
+    padding: 0 12px 12px;
+}
+
+.source:hover {
+    color: #e60023;
+}
+
+.no-results {
+    text-align: center;
+    padding: 50px;
+    color: #777;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.92);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal img {
+    max-width: 90%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.close {
+    position: absolute;
+    right: 30px;
+    top: 20px;
+    color: white;
+    font-size: 40px;
+    cursor: pointer;
+}
+
+footer {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+}
+
+@media(max-width: 900px) {
+    .gallery { columns: 3; }
+}
+
+@media(max-width: 600px) {
+    header {
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .search { width: 100%; }
+
+    .gallery { columns: 2; }
+
+    .hero h1 { font-size: 30px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">Vista.</div>
+    <input
+        type="search"
+        class="search"
+        id="search"
+        placeholder="Search beautiful images..."
+    >
+</header>
+
+<section class="hero">
+    <h1>Discover Beautiful Moments.</h1>
+    <p>A collection of beautiful images from around the world.</p>
+</section>
+
+<div class="categories">
+    <button class="category active" data-category="All">All</button>
+    <button class="category" data-category="Nature">Nature</button>
+    <button class="category" data-category="Travel">Travel</button>
+    <button class="category" data-category="Architecture">Architecture</button>
+    <button class="category" data-category="Lifestyle">Lifestyle</button>
+</div>
+
+<main class="gallery" id="gallery"></main>
+
+<div class="modal" id="modal">
+    <span class="close" id="close">&times;</span>
+    <img id="modalImage" src="" alt="Preview">
+</div>
+
+<footer>
+    <p>Vista Gallery © 2026 | Photos from Unsplash</p>
+</footer>
+
+<script>
+const photos = [
+    {
+        title: "Mountain Paradise",
+        category: "Nature",
+        height: 350,
+        url: "photo-1500530855697-b586d89ba3ee"
+    },
+    {
+        title: "Beautiful Lake",
+        category: "Travel",
+        height: 270,
+        url: "photo-1501785888041-af3ef285b470"
+    },
+    {
+        title: "Ocean Dreams",
+        category: "Nature",
+        height: 400,
+        url: "photo-1518837695005-2083093ee35b"
+    },
+    {
+        title: "Green Forest",
+        category: "Nature",
+        height: 320,
+        url: "photo-1441974231531-c6227db76b6e"
+    },
+    {
+        title: "Tropical Beach",
+        category: "Travel",
+        height: 280,
+        url: "photo-1507525428034-b723cf961d3e"
+    },
+    {
+        title: "Modern Architecture",
+        category: "Architecture",
+        height: 380,
+        url: "photo-1487958449943-2429e8be8625"
+    },
+    {
+        title: "Mountain View",
+        category: "Nature",
+        height: 300,
+        url: "photo-1464822759023-fed622ff2c3b"
+    },
+    {
+        title: "City Building",
+        category: "Architecture",
+        height: 350,
+        url: "photo-1511818966892-d7d671e672a2"
+    },
+    {
+        title: "Sunset Landscape",
+        category: "Travel",
+        height: 290,
+        url: "photo-1470252649378-9c29740c9fa8"
+    },
+    {
+        title: "Lifestyle",
+        category: "Lifestyle",
+        height: 370,
+        url: "photo-1490730141103-6cac27aaab94"
+    },
+    {
+        title: "Mountain Lake",
+        category: "Travel",
+        height: 330,
+        url: "photo-1470770841072-f978cf4d019e"
+    },
+    {
+        title: "Beautiful Nature",
+        category: "Nature",
+        height: 290,
+        url: "photo-1493246507139-91e8fad9978e"
+    }
+];
+
+let activeCategory = "All";
+let favorites = JSON.parse(localStorage.getItem("vistaFavorites") || "[]");
+
+const gallery = document.getElementById("gallery");
+const search = document.getElementById("search");
+
+function imageUrl(photo, width = 700) {
+    return `https://images.unsplash.com/${photo.url}?auto=format&fit=crop&w=${width}&q=85`;
+}
+
+function renderGallery() {
+    gallery.innerHTML = "";
+
+    const query = search.value.toLowerCase();
+
+    const filtered = photos.filter(photo => {
+        const matchesCategory =
+            activeCategory === "All" ||
+            photo.category === activeCategory;
+
+        const matchesSearch =
+            photo.title.toLowerCase().includes(query) ||
+            photo.category.toLowerCase().includes(query);
+
+        return matchesCategory && matchesSearch;
+    });
+
+    if (!filtered.length) {
+        gallery.innerHTML =
+            '<div class="no-results">No images found.</div>';
+        return;
+    }
+
+    filtered.forEach(photo => {
+        const index = photos.indexOf(photo);
+        const liked = favorites.includes(index);
+
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const img = document.createElement("img");
+        img.src = imageUrl(photo);
+        img.alt = photo.title;
+        img.loading = "lazy";
+        img.style.height = photo.height + "px";
+        img.style.objectFit = "cover";
+
+        img.onclick = () => openImage(photo);
+
+        const info = document.createElement("div");
+        info.className = "card-info";
+
+        const title = document.createElement("span");
+        title.textContent = photo.title;
+
+        const heart = document.createElement("button");
+        heart.className = "heart" + (liked ? " liked" : "");
+        heart.textContent = liked ? "♥" : "♡";
+
+        heart.onclick = () => {
+            if (favorites.includes(index)) {
+                favorites = favorites.filter(i => i !== index);
+            } else {
+                favorites.push(index);
+            }
+
+            localStorage.setItem(
+                "vistaFavorites",
+                JSON.stringify(favorites)
+            );
+
+            renderGallery();
+        };
+
+        const link = document.createElement("a");
+        link.className = "source";
+        link.href = `https://unsplash.com/s/photos/${encodeURIComponent(photo.title)}`;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "View on Unsplash ↗";
+
+        info.appendChild(title);
+        info.appendChild(heart);
+
+        card.appendChild(img);
+        card.appendChild(info);
+        card.appendChild(link);
+
+        gallery.appendChild(card);
+    });
+}
+
+function openImage(photo) {
+    document.getElementById("modalImage").src = imageUrl(photo, 1600);
+    document.getElementById("modal").style.display = "flex";
+}
+
+document.getElementById("close").onclick = () => {
+    document.getElementById("modal").style.display = "none";
+};
+
+document.getElementById("modal").onclick = e => {
+    if (e.target.id === "modal") {
+        document.getElementById("modal").style.display = "none";
+    }
+};
+
+search.addEventListener("input", renderGallery);
+
+document.querySelectorAll(".category").forEach(button => {
+    button.onclick = () => {
+        document.querySelector(".category.active")
+            ?.classList.remove("active");
+
+        button.classList.add("active");
+        activeCategory = button.dataset.category;
+        renderGallery();
+    };
+});
+
+renderGallery();
+</script>
+
+</body>
+</html>
